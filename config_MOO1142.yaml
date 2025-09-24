@@ -1,0 +1,50 @@
+#Choose model to fit. Available model:
+fit_method: 'gnfw_circ+beta_circ'
+
+# Important numbers to run the fit
+Nwalkers: 100 #75 # Number of point you want to generate for each step. It must be 4-5 times the number of free parameters
+Nsamples: 20000   # Number of iterations you want to run. 1 is to initialize the chain 
+Nsteps: 100  # Check the autocorrelation time every Nsteps
+chain_length: 20  # the chain must be longer 'chain_length' times the autocorrelation time
+coeff_burn: 10  # Burn the first coeff_burn*np.max(tau) iterations
+
+#path of data:
+data: 
+  gen_path: '/home/eleobar/MOO1142/alpha_gamma_fixed/'
+  map_file: 'data/data.fits' 
+  psf_main_file: 'data/psf_main.fits'
+  psf_sub_file: 'data/psf_sub.fits'
+  exp_main_file: 'data/exp_main.fits'
+  exp_sub_file: 'data/exp_sub.fits'
+  bkg_file: 'data/back.fits'
+
+#path to save file:
+  #it will be: gen_path + fit/ + fit_method + prova_num + '/'
+save_fit:
+  prova_num: '_acfixed_10000steps_priorxymain-alphagamma_bestfitfreeold'
+
+min_exposure: 0.03
+dim_pixel: 6.944444445e-4 #deg, pixel size in arcmin = 0.04167 arcmin
+
+priors: 
+  x_main: 54
+  y_main: 42
+  x_main_craig: 53.59
+  y_main_craig: 40.18
+  x_sub: 67
+  y_sub: 46
+  x_sub_craig: 64.87
+  y_sub_craig: 44.03
+  c500: 1.81  #from Planck Collaboration V 2013 #solo se si vuole fissare r del cluster
+  rs_main: 0.3 #arcmin   (theta500_C1_arcmin/c500)/dim_pix in pixel
+  rs_sub: 0.2  #arcmin   (theta500_C1_arcmin/c500)/dim_pix in pixel
+  A_main: 82 
+  A_sub: 22
+  #x_ps: 0
+  #y_ps: 0
+  #delta_ps: 2 #arcmin, freedom of the center
+  #A_source: [-5*10**-5, -10**-6]
+  #r_source: [1,5] #arcmin
+  #delta_fil: 2 #*max(theta_C1, theta_C2), in arcmin, freedom of the center of the bridge
+  #rc_fil: [0.1, 2] #2*max(theta_C1, theta_C2)
+  #l_fil: [10, 70] #arcmin
