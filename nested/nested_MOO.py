@@ -30,7 +30,7 @@ from multiprocess import Pool
 ----------------------------- FUNCTIONS FOR MCMC ------------------------------
 '''
 # functions for implementing the MCMC are structured following emcee manual (https://emcee.readthedocs.io)
-
+'''
 def log_prior (var):
         
     if fit_method == 'gnfw_ell':      
@@ -47,7 +47,11 @@ def log_prior (var):
             return 0.0
         else:
             return -np.inf
-        
+'''
+def log_prior(theta):
+    prior = np.array([pdist[pi].logpdf(theta[pi]) for pi in range(pnum)])
+    return -np.inf if np.any(~np.isfinite(prior)) else np.sum(prior)
+             
 def log_likelihood (var):            
     
     if fit_method == 'gnfw_ell':      
@@ -78,9 +82,7 @@ def log_likelihood (var):
 
                 
 def log_posterior (var):
-    
     lp = log_prior(var)
-    
     if not np.isfinite(lp):
         return -np.inf
     return lp + log_likelihood(var)
@@ -301,26 +303,24 @@ if fit_method == 'gnfw_ell':
     out_file.write('a_bkg            %.4e      %.4e      \n' % (a_bkg_in[0], a_bkg_in[1]) )
     out_file.close()
 
-# Generate the initial chain using an uniform distribution
-# NB: use the parameters in the same order as in var in the mcmc functions
-if fit_method == 'gnfw_ell':
-    x_main_first=np.random.uniform(x_main_in[0], x_main_in[1], Nwalkers)
-    y_main_first=np.random.uniform(y_main_in[0], y_main_in[1], Nwalkers)
-    rs_main_first=np.random.uniform(rs_main_in[0], rs_main_in[1], Nwalkers)
-    angle_main_first=np.random.uniform(angle_main_in[0], angle_main_in[1], Nwalkers)
-    ecc_main_first=np.random.uniform(ecc_main_in[0], ecc_main_in[1], Nwalkers)
-    beta_main_first=np.random.uniform(beta_main_in[0], beta_main_in[1], Nwalkers)
-    A_main_first=np.random.uniform(A_main_in[0], A_main_in[1], Nwalkers)
-    a_bkg_first=np.random.uniform(a_bkg_in[0], a_bkg_in[1], Nwalkers)
-    
-    init_sample = np.array ([x_main_first, y_main_first, rs_main_first, \
-                            angle_main_first, ecc_main_first, beta_main_first, A_main_first, a_bkg_first]).T 
 
-ndim = init_sample.shape[1]  # number of parameters
 
 pool = None if ncores==1 else Pool(ncores)
 
-pdist = np.copy(init_sample)
+var = [x_main_in, y_main_in, rs_main_in, angle_main_in, ecc_main_in, beta_main_in, \
+    A_main_in, a_bkg_in] 
+
+pdist = []
+for par in var:
+    loc   = par[0]
+    scale = par[1]-loc
+    print(loc, scale)
+    pdist.append(scipy.stats.loguniform(a=loc,b=scale))
+print(np.shape(var))
+print(np.shape(pdist))
+
+ndim = var.shape[1]  # number of parameters
+print(ndim)
 pnum = np.copy(ndim)
 nlive = 1000
 
