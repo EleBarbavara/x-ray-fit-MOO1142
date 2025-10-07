@@ -24,7 +24,7 @@ import glob
 import multiprocess
 from multiprocess import Pool
 
-
+resume_run = False
 
 '''
 ----------------------------- FUNCTIONS FOR MCMC ------------------------------
@@ -339,8 +339,12 @@ sampler = pocomc.Sampler(likelihood = log_likelihood,
                                 pool = pool,
                             output_dir = f'{path_res}',
                         random_state = 0)
-states_ = sorted(glob.glob(f'{path_res}/*.state'))
-sampler.run(save_every=10,resume_state_path=states_[-1] if len(states_) else None,progress=True)
+if resume_run:
+	states_ = sorted(glob.glob(f'{path_res}/*.state'))
+	resume_state_path = states_[-1] if len(states_) else None
+else:
+	resume_state_path = None
+sampler.run(save_every=10,resume_state_path=resume_state_path,progress=True)
 
 if pool is not None: pool.close()
 
