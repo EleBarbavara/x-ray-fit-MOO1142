@@ -30,6 +30,7 @@ from multiprocess import Pool
 ----------------------------- FUNCTIONS FOR MCMC ------------------------------
 '''
 # functions for implementing the MCMC are structured following emcee manual (https://emcee.readthedocs.io)
+
 '''
 def log_prior (var):
         
@@ -51,7 +52,7 @@ def log_prior (var):
 def log_prior(theta):
     prior = np.array([pdist[pi].logpdf(theta[pi]) for pi in range(pnum)])
     return -np.inf if np.any(~np.isfinite(prior)) else np.sum(prior)
-             
+        
 def log_likelihood (var):            
     
     if fit_method == 'gnfw_ell':      
@@ -82,7 +83,9 @@ def log_likelihood (var):
 
                 
 def log_posterior (var):
+    
     lp = log_prior(var)
+    
     if not np.isfinite(lp):
         return -np.inf
     return lp + log_likelihood(var)
@@ -304,7 +307,7 @@ if fit_method == 'gnfw_ell':
     out_file.close()
 
 
-
+    
 pool = None if ncores==1 else Pool(ncores)
 
 var = [x_main_in, y_main_in, rs_main_in, angle_main_in, ecc_main_in, beta_main_in, \
@@ -313,20 +316,22 @@ var = [x_main_in, y_main_in, rs_main_in, angle_main_in, ecc_main_in, beta_main_i
 pdist = []
 for par in var:
     loc   = par[0]
-    scale = par[1]-loc
+    scale = par[1]
     print(loc, scale)
     pdist.append(scipy.stats.loguniform(a=loc,b=scale))
+    print(scipy.stats.loguniform(a=loc,b=scale))
 print(np.shape(var))
 print(np.shape(pdist))
 
-ndim = var.shape[1]  # number of parameters
+ndim = len(var)  # number of parameters
 print(ndim)
 pnum = np.copy(ndim)
 nlive = 1000
 
+
 prior = pocomc.Prior(pdist)
 sampler = pocomc.Sampler(likelihood = log_likelihood,
-                            periodic = np.arange(pnum),
+                            #periodic = np.arange(pnum),
                                 prior = prior,
                         n_effective = nlive,
                             n_active = nlive//2,
@@ -342,12 +347,20 @@ if pool is not None: pool.close()
 samples, weights, logl, _ = sampler.posterior()
 logz, _ = sampler.evidence()
 
+fig = corner.corner(samples, weights=weights,  labels=[r'$x_{main}$', r'$y_{main}$', r'$rs_{main}$', r'$angle_{main}$', r'$ecc_{main}$', r'$\beta_{main}$', r'$A_{main}$', r'$a_{bkg}$'], quantiles=[0.16, 0.5, 0.84], show_titles=True, title_fmt='.2E')  #r'$x_{main}$', r'$y_{main}$',
+fig.savefig(path_res + 'corner_plots.png')
+plt.close()
 
+pout = np.empty((3,pnum))
+for pi in range(pout.shape[1]):
+    qi = corner.quantile(samples[:,pi],[0.16,0.50,0.84],weights=weights)
+    pout[:,pi] = np.array([qi[1],*np.diff(qi)])
+print(pout.T)
 
-tau=sampler.get_autocorr_time(tol=0)
-print ('Number of iterations: {0}'.format(sampler.iteration))
-print ('Autocorrelation for each parameter: {0}'.format(tau))
-print ('Mean acceptance fraction: {0:.3f}'.format(np.mean(sampler.acceptance_fraction))) # output must be between 0.2 & 0.5, otherwise you must include moves=[(emcee.moves.StretchMove)] in emcee.EnsembleSampler
+#tau=sampler.get_autocorr_time(tol=0)
+#print ('Number of iterations: {0}'.format(sampler.iteration))
+#print ('Autocorrelation for each parameter: {0}'.format(tau))
+#print ('Mean acceptance fraction: {0:.3f}'.format(np.mean(sampler.acceptance_fraction))) # output must be between 0.2 & 0.5, otherwise you must include moves=[(emcee.moves.StretchMove)] in emcee.EnsembleSampler
 
 results = np.empty((3,pnum))
 for pi in range(results.shape[1]):
@@ -366,6 +379,7 @@ generate and save:
 '''
 
 # Convergence plot - min, max, mean
+'''
 fig=plt.figure()
 n = Nsteps * np.arange(1, index + 1)
 y_min = autocorr_min[:index]
@@ -380,7 +394,7 @@ plt.xlabel("number of iterations")
 plt.ylabel(r"$\tau$")
 plt.legend()
 plt.savefig(path_res + 'convergence_plot2.png')
-
+'''
 
 ###########################################################################
 if fit_method == 'gnfw_ell':
@@ -463,7 +477,7 @@ if fit_method == 'gnfw_ell':
                 #r'$x_{main}$', r'$y_{main}$', 
     fig.savefig(path_res + 'corner_plots.png')
     plt.close()
-
+    '''
     # Convergence plot - all
     fig=plt.figure()
     n = Nsteps * np.arange(1, index + 1)
@@ -496,3 +510,4 @@ if fit_method == 'gnfw_ell':
     plt.plot(n, likelihood)
     plt.savefig(path_res + 'likelihood_plot_walkersmean.png')
     plt.close()
+    '''
