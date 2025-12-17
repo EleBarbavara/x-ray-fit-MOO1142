@@ -428,7 +428,8 @@ plt.savefig(path_res + 'convergence_plot2.png')
 if fit_method == 'gnfw_circ+beta_circ':
     
     # Save best fit parameters    
-    
+    #le slope beta e gamma sono divise per 2 perche sto usando un gNFW nel fit per SZ, mentre quello dei raggi X va elevato al quadrato
+    #la sloper alpha non cambia
     out_file = open(path_res+'Fit_Results', 'w')
     out_file.write('#Parameter  BestFit -1sigma +1sigma\n')
     out_file.write('x_main\t%.4e\t%.4e\t%.4e\n' % (results[0,0], results[0,1], results[0,2]))
@@ -438,8 +439,8 @@ if fit_method == 'gnfw_circ+beta_circ':
     out_file.write('rs_main(arcmin)\t%.4e\t%.4e\t%.4e\n' % (results[4,0]*dim_pix, results[4,1]*dim_pix, results[4,2]*dim_pix))
     out_file.write('rc_sub(arcmin)\t%.4e\t%.4e\t%.4e\n' % (results[5,0]*dim_pix, results[5,1]*dim_pix, results[5,2]*dim_pix))
     out_file.write('alpha_main\t%.4e\t%.4e\t%.4e\n' % (results[6,0], results[6,1], results[6,2]))
-    out_file.write('beta_main\t%.4e\t%.4e\t%.4e\n' % (results[7,0], results[7,1], results[7,2]))
-    out_file.write('gamma_main\t%.4e\t%.4e\t%.4e\n' % (results[8,0], results[8,1], results[8,2]))
+    out_file.write('beta_main\t%.4e\t%.4e\t%.4e\n' % (results[7,0]/2, results[7,1], results[7,2]))
+    out_file.write('gamma_main\t%.4e\t%.4e\t%.4e\n' % (results[8,0]/2, results[8,1], results[8,2]))
     out_file.write('beta_sub\t%.4e\t%.4e\t%.4e\n' % (results[9,0], results[9,1], results[9,2]))
     out_file.write('A_main\t%.4e\t%.4e\t%.4e\n' % (results[10,0], results[10,1], results[10,2]))
     out_file.write('A_sub\t%.4e\t%.4e\t%.4e\n' % (results[11,0], results[11,1], results[11,2]))
